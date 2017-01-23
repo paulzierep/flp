@@ -6,8 +6,8 @@ in order to create the sub-paths for a series of at least 3800 molecules.
 The object-oriented approch allows to modify the code and apply it to different situations.
 
 Requirements:
-python 2.7
-numpy (at least version 1.11.0)
+python 2.7,
+numpy (at least version 1.11.0),
 rdkit (at least version 2015.03.1)
 
 This is a python package, which shoud be usable anywhere on a unix or linux related system, just clone or download it 
