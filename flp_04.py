@@ -1,3 +1,7 @@
+########################
+# written by Paul Zierep
+########################
+
 import rdkit
 from rdkit import Chem
 import numpy as np
