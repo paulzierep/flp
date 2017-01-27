@@ -6,7 +6,7 @@ import rdkit
 from rdkit import Chem
 import numpy as np
 from rdkit.Chem import Draw
-import Image
+from PIL import Image
 import numpy as np
 import ast
 from rdkit.Chem import AllChem
