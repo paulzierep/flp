@@ -7,7 +7,6 @@ from rdkit import Chem
 import numpy as np
 from rdkit.Chem import Draw
 from PIL import Image
-import numpy as np
 import ast
 from rdkit.Chem import AllChem
 from rdkit.Chem import rdFMCS
@@ -15,16 +14,14 @@ from pks_path import *
 
 '''classes'''
 
-'''whenever, there is something already existing in the class, such as the mol file, the smiles ....then the new function will be callable inside the 
-function, but in case the function does not need to be part of the class, it will be independent'''
-
 class pks_mol():
 	'''pks_mol class - the minimum parameter required is a smiles, then the object can be used to create long paths trough the 
-	molecule, identify staring points for the parts ...'''
+	molecule, identify staring points for the parts, possbile outputs are shown in the examples below.'''
 
 	def __init__(self, input):
 		'''initiation of the object'''
 		try:
+			#creat the smiles and mol object of the input
 			self.mol = Chem.MolFromSmiles(input)
 			self.smiles = Chem.MolToSmiles(Chem.MolFromSmiles(input))
 		except:
@@ -34,73 +31,75 @@ class pks_mol():
 		'''optional, can be useful for sorting'''
 		self.name = name
 
-	def draw(self):
+	def draw(self, size = (300,300)):
 		'''get an image of the molecule'''
-		return(Draw.MolToImage(self.mol))	
+		return(Draw.MolToImage(self.mol, size))
 
-	def draw_and_show(self):
+	def draw_and_show(self, size = (300,300)):
 		'''get an image of the molecule and direct output'''
-		(Draw.MolToImage(self.mol)).show()
+		(Draw.MolToImage(self.mol, size)).show()
 
-	def get_starting_matches(self, smarts_dicts = {}):
+	def get_starting_matches(self, smarts_list = []):
+		#smarts_list are a list of set that has all the needed information for a starting unit (name, smarts_pattern, idx of start atom), example: [(lactone, '[#6][#6](=O)[#8][#6]', 1), (amide, '[#6][#6]([#7])=O', 1), ...]
 
 		'''this function gets all the needed starter units for the pks path algorithm, for self written smiles patterns use the custom function'''
 
-		if smarts_dicts == {}:
+		if smarts_list == []:
 
 			lactone = Chem.MolFromSmarts('[#6][#6](=O)[#8][#6]') 
 			amide = Chem.MolFromSmarts('[#6][#6]([#7])=O')	
 			carboxyl = Chem.MolFromSmarts('[#6][#6]([OH])=O')	
 			carboxylate = Chem.MolFromSmarts('[#6]C([O-])=O') 	
-			aldehyde = Chem.MolFromSmarts('C[!N&D2]=O')	#so far the best def. for an aldehyde which does not match other subs. (expl: an carbon, followed by any atom which 
-			#has two explicit bonds but not an nitrogen, tested for ~500 compounds no false match so far)
+			#aldehyde = Chem.MolFromSmarts('C[!N&D2]=O')	#so far the best def. for an aldehyde which does not match other subs. (expl: an carbon, followed by any atom which 
+														#has two explicit bonds but not an nitrogen, tested for ~500 compounds no false match so far)
+
+			aldehyde = Chem.MolFromSmarts('[CX3H1:1]=[OX1;!$(O=C~[!#1!#6]):2]') #better definition from https://www.chemaxon.com/forum/ftopic3049.html
 
 			match_names = ['lactone','amide','carboxyl','carboxylate','aldehyde'] #name of the starting points
-			smarts_list = [lactone,amide,carboxyl,carboxylate,aldehyde] #smarts
-			#start_carbon_list = [1, 1, 1, 1, 1]	#number of carbon atom which shell start the path (numbering is oriented on the smarts patter ex.: aldehyde: 1-C-2-[D2]-3-=O), all 1 therefore became useless :)
-
+			smart_list = [lactone,amide,carboxyl,carboxylate,aldehyde] #smarts
+			start_idx = [1,1,1,1,0]
+			
+			#(Draw.MolToImage(aldehyde, size = (300,300))).show()
 
 		'''this part allows to use custom designed smarts patterns to find the longest paths'''
 
-		if smarts_dicts != {}:
+		if smarts_list != []:
 
 			match_names = [] #name of the starting points
-			smarts_list = [] #smarts
+			smart_list = [] #smarts
+			start_idx = []
 
-			for key in smarts_dicts:
-				match_names.append(key)
-				smarts_list.append(smarts_dicts[key])
-
+			for sets in smarts_list:
+				match_names.append(sets[0])
+				smart_list.append(Chem.MolFromSmarts(sets[1]))
+				start_idx.append(sets[2])
 
 
 		match = {}
 		idx = 0
-		for smarts in smarts_list:
+		for smarts in smart_list:
+
 			substruct = self.mol.GetSubstructMatches(smarts)
-			match[match_names[idx]] = substruct
+			match[match_names[idx]] = substruct, start_idx[idx]
 			idx += 1 
 
 		return(match)
 
 
+	def find_starting_atom(self):
 
-
-		# self.matches = match
-	def find_starting_C_atom(self):
-
-		'''maybe implement an automatic algorithm, to fin the correct C atom, must be done for the custom function'''
+		#function which returns the atom idx in the mol of the starting atom for a given starting unit.
 
 		match = self.get_starting_matches()
 
-
 		'''Takes the output of find_starting_matches and returns a list with the indices of the carbon atoms from the substructure starting points, 
 		ex.: 'amide': ((3, 4, 6, 5), (10, 8, 6, 9), (19, 17, 16, 18)) ---> [4, 8, 17]'''
-		C_list = []
-		for key in match:
-			for sub in match[key]:
-				C_list.append(sub[1])	#can be changed if there is a substructure where the starting C-Atom is at a different position
+		start_atom_list = []
+		for name in match:
+			for sub in match[name][0]:
+				start_atom_list.append(sub[match[name][1]]) #is based on the idx supplied in get_starting_matches
 
-		return(C_list)
+		return(start_atom_list)
 
 	def path_recursion(self, no_peptide = True, **kwargs):
 
@@ -217,7 +216,7 @@ class pks_mol():
 			return(new_dics, unique_paths)
 
 
-		start = self.find_starting_C_atom()	#get a list of start indices, to initiate the recursive function
+		start = self.find_starting_atom()	#get a list of start indices, to initiate the recursive function
 
 		longest_paths = {}	# this will be the dic where for each starting atom, a list of lists will be stored which contains 
 							# all the unique atom chains starting from this atom
@@ -696,10 +695,22 @@ def list2mol(mol, liste):
 #uncomment step by step to learn more about the class.
 #all the major functionalists are demonstrated.
 
-# smiles = 'CO[C@H]1C[C@H](O[C@H]2[C@@H](C)/C=C/C=C/3\\CO[C@H]4[C@]3(O)[C@@H](C=C([C@H]4O)C)C(=O)O[C@H]3C[C@@H](C/C=C/2\\C)O[C@]2(C3)C=C[C@@H]([C@H](O2)[C@H](CC)C)C)O[C@H]([C@@H]1O[C@H]1C[C@H](OC)[C@H]([C@@H](O1)C)O)C'
+smiles = 'CO[C@H]1C[C@H](O[C@H]2[C@@H](C)/C=C/C=C/3\\CC(CCC=O)C(CC=O)CO[C@H]4[C@]3(O)[C@@H](C=C([C@H]4O)C)C(=O)O[C@H]3C[C@@H](C/C=C/2\\C)O[C@]2(C3)C=C[C@@H]([C@H](O2)[C@H](CC)C)C)O[C@H]([C@@H]1O[C@H]1C[C@H](OC)[C@H]([C@@H](O1)C)O)C'
 
-# #initiate the object
-# object1 = pks_mol(smiles)
+#initiate the object
+object1 = pks_mol(smiles)
+
+object1.draw_and_show(size = (500,500))
+
+print object1.get_starting_matches()
+print object1.find_starting_atom()
+k = object1.path_recursion(exclude = ['O','S'])
+for key in k:
+	print key
+
+draw_mol_and_path(object1.mol, k[17][-1]).show()
+draw_mol_and_path(object1.mol, k[34][-1]).show()
+draw_mol_and_path(object1.mol, k[21][-1]).show()
 
 # #show it
 # object1.draw_and_show()
