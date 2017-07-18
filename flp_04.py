@@ -407,38 +407,38 @@ def draw_mol_and_path_save(mol, path, file_path):
 
 ##debug and explanatio### 
 
-# #uncomment step by step to learn more about the class.
-# #all the major functionalists are demonstrated.
+#uncomment step by step to learn more about the class.
+#all the major functionalists are demonstrated.
 
-# smiles = 'CO[C@H]1C[C@H](O[C@H]2[C@@H](C)/C=C/C=C/3\\CC(CCC=O)C(CC=O)CO[C@H]4[C@]3(O)[C@@H](C=C([C@H]4O)C)C(=O)O[C@H]3C[C@@H](C/C=C/2\\C)O[C@]2(C3)C=C[C@@H]([C@H](O2)[C@H](CC)C)C)O[C@H]([C@@H]1O[C@H]1C[C@H](OC)[C@H]([C@@H](O1)C)O)C'
+smiles = 'C[C@@H](C(C(O)=O)=C1)C[C@@]2(C(O)=C(O3)C(O2)=O)[C@@H]1C=CCCCC[C@@H]4C=C[C@@]([C@@H](O[C@@H]5C[C@H](O)[C@@H](O[C@H]6O[C@@H](C)[C@H](O)[C@@H](OC(C7=C(C)C(Cl)=CC=C7OC)=O)C6)[C@@H](C)O5)CCC8)([H])[C@]8([H])[C@@H]4C3=O'
 
-# #initiate the object
-# object1 = pks_mol(smiles)
+#initiate the object
+object1 = pks_mol(smiles)
 
-# #show it
-# object1.draw_and_show(size = (500,500))
+#show it
+#object1.draw_and_show(size = (500,500))
 
-# # starting units 
-# print object1.get_starting_matches()
+# starting units 
+#print object1.get_starting_matches()
 
-# # starting atoms
-# print object1.find_starting_atom()
+# starting atoms
+#print object1.find_starting_atom()
 
-# # all paths for this object (O and S are not in the path)
-# k = object1.path_recursion(exclude = ['O','S'])
-# # print k
+# all paths for this object (O and S are not in the path)
+k = object1.path_recursion(exclude = ['O','S'])
+# print k
 
-# # # draw an example
-# for key in k:
-# 	for lis in k[key]:
-# 		print lis
-# 		draw_mol_and_path(object1.mol, lis).show()
-# 	break	
+# # draw an example
+for key in k:
+	for lis in k[key]:
+		print lis
+		draw_mol_and_path(object1.mol, lis).show()
+	break	
 	
 
-# # #matrix, returns the matrix description of a path which can be used to compare paths to each other (like a fingerprint), the 
-# # #documentation for the comparison synthax and the matrix will follow soon,
-# # #also the side indices will be returned in order to allow to color them different for example
+# #matrix, returns the matrix description of a path which can be used to compare paths to each other (like a fingerprint), the 
+# #documentation for the comparison synthax and the matrix will follow soon,
+# #also the side indices will be returned in order to allow to color them different for example
 # matrix, side_idx = object1.path2matrix_3(k[34][-1])
 # print matrix
 # img_with_path = draw_mol_and_path(object1.mol, side_idx)
