@@ -410,10 +410,17 @@ def draw_mol_and_path_save(mol, path, file_path):
 #uncomment step by step to learn more about the class.
 #all the major functionalists are demonstrated.
 
+
 smiles = 'C[C@@H](C(C(O)=O)=C1)C[C@@]2(C(O)=C(O3)C(O2)=O)[C@@H]1C=CCCCC[C@@H]4C=C[C@@]([C@@H](O[C@@H]5C[C@H](O)[C@@H](O[C@H]6O[C@@H](C)[C@H](O)[C@@H](OC(C7=C(C)C(Cl)=CC=C7OC)=O)C6)[C@@H](C)O5)CCC8)([H])[C@]8([H])[C@@H]4C3=O'
 
 #initiate the object
 object1 = pks_mol(smiles)
+
+# avermectin_smi = 'CC[C@H](C)[C@@H]1[C@H](C=C[C@@]2(O1)C[C@@H]3C[C@H](O2)C/C=C(/[C@H]([C@H](/C=C/C=C/4\CO[C@H]5[C@@]4([C@@H](C=C([C@H]5O)C)C(=O)O3)O)C)O[C@H]6C[C@@H]([C@H]([C@@H](O6)C)O[C@H]7C[C@@H]([C@H]([C@@H](O7)C)O)OC)OC)\C)C'
+# avermectin_smi = 'C1C(CC2(CC3))C(CC2(CC3))CCC1(CCCC=O)'
+
+# #initiate the object
+# object1 = pks_mol(avermectin_smi)
 
 #show it
 #object1.draw_and_show(size = (500,500))
@@ -423,6 +430,7 @@ object1 = pks_mol(smiles)
 
 # starting atoms
 #print object1.find_starting_atom()
+
 
 # all paths for this object (O and S are not in the path)
 k = object1.path_recursion(exclude = ['O','S'])
@@ -434,6 +442,20 @@ for key in k:
 		print lis
 		draw_mol_and_path(object1.mol, lis).show()
 	break	
+
+# # all paths for this object (O and S are not in the path)
+# k = object1.path_recursion(exclude = ['O','S'])
+# print k
+
+# # # draw an example
+# for key in k:
+# 	longst_p = sorted(k[key], key = lambda x: len(x), reverse=True)
+# 	longst_p = longst_p[:3]
+
+# 	for lis in longst_p:
+# 		draw_mol_and_path(object1.mol, lis).show()
+
+
 	
 
 # #matrix, returns the matrix description of a path which can be used to compare paths to each other (like a fingerprint), the 
